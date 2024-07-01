@@ -1,10 +1,12 @@
 # This is the RPG text adventure game I am making instead of studying for trials
 from sys import exit
 from random import randrange
-import ItemClasses
-import Levels
 from sty import bg, fg
 from os import system
+
+import ItemClasses
+import Levels
+import Objects
 
 
 class Player:
@@ -31,7 +33,7 @@ class Player:
 
         self.__oldPos = " "
 
-        self.__currentLevel = 1
+        self.__currentScene = ""
 
     def GetX(self):
         return self.__xpos
@@ -49,45 +51,57 @@ class Player:
         self.__ypos = newvalue
 
     def GetLevel(self):
-        return self.__currentLevel
+        return self.__currentScene
 
-    def ChangeLevel(self, level, sceneholder):
+    def ChangeLevel(self, scene, sceneholder):
         self.__xpos = 0
         self.__ypos = 0
         sceneholder.clear()
-        match level:
-            case 1:
-                for i in Levels.Level1:
+        match scene:
+            case "Dungeon1":
+                for i in Levels.Dungeon1:
                     sceneholder.append(i)
+                    self.__currentScene = scene
                 self.SetPosition(23, 23)
-            case 2:
-                for i in Levels.Level2:
+            case "WaterRoom":
+                for i in Levels.WaterRoom:
                     sceneholder.append(i)
-                self.SetPosition(5, 5)
+                    self.__currentScene = scene
+                self.SetPosition(5, 7)
+            case "GrassField":
+                for i in Levels.GrassField:
+                    sceneholder.append(i)
+                    self.__currentScene = scene
+                self.SetPosition(5, 6)
+            case "ErrorRoom":
+                for i in Levels.ErrorLevel:
+                    sceneholder.append(i)
+                    self.__currentScene = scene
+                self.SetPosition(5, 7)
         ShowMap(map)
 
     def Collision(self):
         match map[self.__ypos - 1][self.__xpos - 1]:
-            case "|":
-                print("Cant move in that Direction")
-                return False
-            case "-":
-                print("Cant move in that Direction")
-                return False
-            case "+":
-                print("Cant move in that Direction")
-                return False
-            case "#":
+            case "|" | "-" | "+" | "#":
                 print("Cant move in that Direction")
                 return False
             case "~":
                 Levels.itemcolor["0"] = fg(20) + bg(26)
                 return True
+            case "T":
+                print("The Trees are too thick to walk through!")
+                return False
             case "=":
                 choice = input("This will take you to a different area. Proceed? (y/n): ")
                 if choice == "y":
-                    self.__currentLevel += 1
-                    self.ChangeLevel(self.__currentLevel, map)
+                    temp = "ErrorRoom"
+                    for i in Objects.Doors:
+                        print(i.GetIdentifier())
+                        print(f"{self.__xpos}{self.__ypos}{self.__currentScene}")
+                        if i.GetIdentifier() == f"{self.__xpos}{self.__ypos}{self.__currentScene}":
+                            temp = i.GetWarpPoint()
+                    self.__currentScene = temp
+                    self.ChangeLevel(temp, map)
                     return "LevelChange"
                 else:
                     print("Chose not to proceed")
@@ -246,7 +260,7 @@ map = []
 
 player = Player("james", 10, randrange(1, 5), randrange(1, 5), randrange(1, 5), 1)
 
-player.ChangeLevel(player.GetLevel(), map)
+player.ChangeLevel("GrassField", map)
 
 funcdictionary = {"stats": player.ShowStats, "removeitem": player.RemoveInventory, "inventory": player.ShowInventory,
                   "equip": player.Equip, "exit": exit, "moveright": player.MoveRight, "moveleft": player.MoveLeft,
