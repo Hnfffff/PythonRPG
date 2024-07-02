@@ -7,6 +7,7 @@ from os import system
 import ItemClasses
 import Levels
 import Objects
+import Enemies
 
 
 class Player:
@@ -50,7 +51,7 @@ class Player:
     def SetY(self, newvalue):
         self.__ypos = newvalue
 
-    def GetLevel(self):
+    def GetScene(self):
         return self.__currentScene
 
     def ChangeLevel(self, scene, sceneholder):
@@ -63,34 +64,39 @@ class Player:
                     sceneholder.append(i)
                     self.__currentScene = scene
                 self.SetPosition(23, 23)
+
             case "WaterRoom":
                 for i in Levels.WaterRoom:
                     sceneholder.append(i)
                     self.__currentScene = scene
                 self.SetPosition(5, 7)
+
             case "GrassField":
                 for i in Levels.GrassField:
                     sceneholder.append(i)
                     self.__currentScene = scene
                 self.SetPosition(5, 6)
+
             case "ErrorRoom":
                 for i in Levels.ErrorLevel:
                     sceneholder.append(i)
                     self.__currentScene = scene
                 self.SetPosition(5, 7)
-        ShowMap(map)
 
     def Collision(self):
-        match map[self.__ypos - 1][self.__xpos - 1]:
+        match Levels.Scene[self.__ypos - 1][self.__xpos - 1]:
             case "|" | "-" | "+" | "#":
                 print("Cant move in that Direction")
                 return False
+
             case "~":
                 Levels.itemcolor["0"] = fg(20) + bg(26)
                 return True
+
             case "T":
                 print("The Trees are too thick to walk through!")
                 return False
+
             case "=":
                 choice = input("This will take you to a different area. Proceed? (y/n): ")
                 if choice == "y":
@@ -101,7 +107,7 @@ class Player:
                         if i.GetIdentifier() == f"{self.__xpos}{self.__ypos}{self.__currentScene}":
                             temp = i.GetWarpPoint()
                     self.__currentScene = temp
-                    self.ChangeLevel(temp, map)
+                    self.ChangeLevel(temp, Levels.Scene)
                     return "LevelChange"
                 else:
                     print("Chose not to proceed")
@@ -113,81 +119,76 @@ class Player:
                 return True
 
     def MoveLeft(self):
-        map[player.GetY() - 1][player.GetX() - 1] = self.__oldPos
+        Levels.Scene[self.__ypos - 1][self.__xpos - 1] = self.__oldPos
         self.__xpos -= 1
 
         match self.Collision():
             case False:
                 self.__xpos += 1
-                map[player.GetY() - 1][player.GetX() - 1] = "0"
+                Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
+
             case True:
                 self.SetOldPos()
-                map[player.GetY() - 1][player.GetX() - 1] = "0"
+                Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
                 system('cls')
-                ShowMap(map)
+
             case _:
                 print("Swapped Levels")
 
     def MoveRight(self):
-        map[player.GetY() - 1][player.GetX() - 1] = self.__oldPos
+        Levels.Scene[self.__ypos - 1][self.__xpos - 1] = self.__oldPos
         self.__xpos += 1
 
         match self.Collision():
             case False:
                 self.__xpos -= 1
-                map[player.GetY() - 1][player.GetX() - 1] = "0"
+                Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
             case True:
                 self.SetOldPos()
-                map[player.GetY() - 1][player.GetX() - 1] = "0"
+                Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
                 system('cls')
-                ShowMap(map)
             case _:
                 print("Swapped Levels")
 
     def MoveUp(self):
-        map[player.GetY() - 1][player.GetX() - 1] = self.__oldPos
+        Levels.Scene[self.__ypos - 1][self.__xpos - 1] = self.__oldPos
         self.__ypos -= 1
 
         match self.Collision():
             case False:
                 self.__ypos += 1
-                map[player.GetY() - 1][player.GetX() - 1] = "0"
+                Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
             case True:
                 self.SetOldPos()
-                map[player.GetY() - 1][player.GetX() - 1] = "0"
+                Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
                 system('cls')
-                ShowMap(map)
             case _:
                 print("Swapped Level")
 
-
     def MoveDown(self):
-        map[player.GetY() - 1][player.GetX() - 1] = self.__oldPos
+        Levels.Scene[self.__ypos - 1][self.__xpos - 1] = self.__oldPos
         self.__ypos += 1
 
         match self.Collision():
             case False:
                 self.__ypos -= 1
-                map[player.GetY() - 1][player.GetX() - 1] = "0"
-                ShowMap(map)
+                Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
             case True:
                 self.SetOldPos()
-                map[player.GetY() - 1][player.GetX() - 1] = "0"
+                Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
                 system('cls')
-                ShowMap(map)
             case _:
                 print("Swapped Level")
 
-
     def SetPosition(self, x, y):
-        #self.SetOldPos()
+        # self.SetOldPos()
         self.__ypos = y
         self.__xpos = x
         self.SetOldPos()
-        map[self.__ypos - 1][self.__xpos - 1] = "0"
+        Levels.Scene[self.__ypos - 1][self.__xpos - 1] = "0"
 
     def SetOldPos(self):
-        self.__oldPos = map[self.__ypos - 1][self.__xpos - 1]
+        self.__oldPos = Levels.Scene[self.__ypos - 1][self.__xpos - 1]
 
     def GetName(self):
         return self.__name
@@ -215,9 +216,10 @@ class Player:
         self.__inventory.append(item)
 
     def RemoveInventory(self):
-        index = int(input("> Index of item to Remove?: "))-1
+        index = int(input("> Index of item to Remove?: ")) - 1
         try:
-            confirm = input(f"Are you sure you would like to Destroy {self.__inventory[index].GetItemName()}: GearScore: {self.__inventory[index].GetGearScore()}? (y/n)").lower()
+            confirm = input(
+                f"Are you sure you would like to Destroy {self.__inventory[index].GetItemName()}: GearScore: {self.__inventory[index].GetGearScore()}? (y/n)").lower()
             if confirm == "y":
                 self.__inventory.pop(index)
                 print("Successfully Removed Item!")
@@ -247,7 +249,6 @@ Speed: {self.__speed + self.__speedMod} (Base {self.__speed} + {self.__speedMod}
 Faith: {self.__faith + self.__faithMod} (Base {self.__faith} + {self.__faithMod})""")
 
 
-
 def ShowMap(holder):
     for i in holder:
         temp = ""
@@ -256,24 +257,25 @@ def ShowMap(holder):
         print(temp)
 
 
-map = []
+
 
 player = Player("james", 10, randrange(1, 5), randrange(1, 5), randrange(1, 5), 1)
 
-player.ChangeLevel("GrassField", map)
+
+player.ChangeLevel("GrassField", Levels.Scene)
 
 funcdictionary = {"stats": player.ShowStats, "removeitem": player.RemoveInventory, "inventory": player.ShowInventory,
                   "equip": player.Equip, "exit": exit, "moveright": player.MoveRight, "moveleft": player.MoveLeft,
-                  "moveup": player.MoveUp, "movedown": player.MoveDown, "position":player.GetPosition}
+                  "moveup": player.MoveUp, "movedown": player.MoveDown, "position": player.GetPosition}
 
 if __name__ == "__main__":
     player.AddInventory(ItemClasses.Shield("Iron Shield", 5, 0, -5, 0, player.GetLevel()))
     while True:
+        ShowMap(Levels.Scene)
         choice = str(input(fg(40) + "> "))
         try:
             if choice.lower() == "map":
                 system('cls')
-                ShowMap(map)
             else:
                 funcdictionary[choice]()
         except SystemExit:
