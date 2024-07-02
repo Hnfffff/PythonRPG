@@ -1,4 +1,7 @@
 import Enemies
 import Levels
 
-testenemy = Enemies.BaseEnemy("Test", "@", Levels.Scene, 5, 10)
+testenemy = Enemies.BaseEnemy("Test", "@", Levels.Scene, 5, 10, "GrassField")
+
+
+enemies = [testenemy]

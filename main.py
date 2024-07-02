@@ -7,8 +7,7 @@ from os import system
 import ItemClasses
 import Levels
 import Objects
-import Enemies
-
+import EnemyHolder
 
 class Player:
     def __init__(self, name, healthBase, strengthBase, speedBase, faithBase, level):
@@ -269,8 +268,13 @@ funcdictionary = {"stats": player.ShowStats, "removeitem": player.RemoveInventor
                   "moveup": player.MoveUp, "movedown": player.MoveDown, "position": player.GetPosition}
 
 if __name__ == "__main__":
+    EnemyHolder.testenemy.SetPosition(8, 9)
     player.AddInventory(ItemClasses.Shield("Iron Shield", 5, 0, -5, 0, player.GetLevel()))
     while True:
+        for j in EnemyHolder.enemies:
+            if j.Getlevel() == player.GetScene():
+                #ShowMap(Levels.Scene)
+                j.Move(randrange(-1,1), randrange(-1,1), randrange(1,2))
         ShowMap(Levels.Scene)
         choice = str(input(fg(40) + "> "))
         try:
